@@ -9,14 +9,16 @@
             <el-menu :default-active="$route.path" mode="horizontal" :ellipsis="false" @select="handleSelect">
                 <div v-for="menu in menuList" :key="menu.path">
                     <el-sub-menu v-if="menu.children.length > 0" :index="menu.path">
+                        <i :class="['iconfont', menu.icon, 'mr-1']"></i>
                         <template #title>{{ menu.title }}</template>
                         <el-menu-item v-for="submenu in menu.children" :index="submenu.path">
-                            {{ submenu.title }}
+                            <i :class="['iconfont', submenu.icon]"></i>
+                            <span class="ml-1">{{ submenu.title }}</span>
                         </el-menu-item>
                     </el-sub-menu>
                     <el-menu-item v-else :index="menu.path">
                         <i :class="['iconfont', menu.icon]"></i>
-                        {{ menu.title }}
+                        <span class="ml-1">{{ menu.title }}</span>
                     </el-menu-item>
                 </div>
             </el-menu>
@@ -28,7 +30,7 @@
 
 <script setup lang="ts">
 
-import { useRouter } from 'vue-router';
+import { debounce } from '@/utils/tool';
 
 const router = useRouter();
 
@@ -43,6 +45,12 @@ const menuList = [
         title: '关于',
         path: '/about',
         icon: 'icon-about', // 假设有一个名为 icon-about 的图标
+        children: [],
+    },
+    {
+        title: '时间轴',
+        path: '/timeline',
+        icon: 'icon-clock', // 假设有一个名为 icon-about 的图标
         children: [],
     },
     {
@@ -70,6 +78,8 @@ let lastScrollTop = 0; // 用于记录上一次的滚动位置
 let SCROLL_THRESHOLD = 0; // 滚动阈值，单位：px
 const headerRef = ref<HTMLElement | null>(null); // 用于获取 header-container 的 DOM 元素
 
+// 使用 debounce 包装 handleScroll
+const debouncedHandleScroll = debounce(handleScroll, 50);
 onMounted(() => {
 
     // 获取 header 高度数值
@@ -77,18 +87,19 @@ onMounted(() => {
         SCROLL_THRESHOLD = headerRef.value.clientHeight * 3;
     }
     console.log('Header height:', SCROLL_THRESHOLD);
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', debouncedHandleScroll);
 });
 
 onUnmounted(() => {
-    window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('scroll', debouncedHandleScroll);
 });
 
 
 let headerClass = ref('show-header');
 function handleScroll() {
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
 
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    console.log('Scroll Top:', scrollTop);
     if (scrollTop === 0) {
         // 页面在顶部
         headerClass.value = 'show-header top';
@@ -98,7 +109,7 @@ function handleScroll() {
             // 向上滚动
             headerClass.value = 'show-header top';
         }
-        else{
+        else {
             // 向下滚动
             headerClass.value = 'hide-header top'
         }
@@ -114,6 +125,7 @@ function handleScroll() {
     }
 
     lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+
 }
 
 function handleSelect(path: string) {
@@ -127,6 +139,7 @@ function handleSelect(path: string) {
 .iconfont {
     font-size: large;
 }
+
 
 .header-container {
     display: flex;
@@ -179,13 +192,13 @@ function handleSelect(path: string) {
 
 .hide-header {
     animation-name: hideHeader;
-    animation-duration: 0.3s;
+    animation-duration: 0.2s;
     animation-fill-mode: forwards;
 }
 
 .show-header {
     animation-name: showHeader;
-    animation-duration: 0.8s;
+    animation-duration: 0.6s;
     animation-fill-mode: forwards;
 }
 
