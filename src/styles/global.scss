@@ -1,5 +1,9 @@
 @use "variables";
 
+.html {
+    font-size: var(--global-font-size);
+}
+
 .header-container {
     width: 100%;
     height: var(--header-container-h);
@@ -13,15 +17,16 @@
 
 .main-container {
     width: 100%;
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - var(--header-container-h));
     // padding-top: var(--header-container-h);
     align-items: center;
-    background-color: gray;
+    
 }
 
 
 .footer-container {
     width: 100%;
-    height: 60px;;
+    height: var(--footer-container-h);
     background-color: azure;
+    border-top: 2px solid color-mix(in oklab, var(--color-gray-950) 5%, transparent);
 }
