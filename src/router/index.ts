@@ -3,26 +3,29 @@ import Layout from "@/components/Layout/index.vue";
 
 
 
+import { generateRoutes } from './dynamicRoutes';
+
+// 动态生成的子路由
+const dynamicRoutes = generateRoutes();
+
+
+// 最终路由配置
 const routes = [
   {
-    path: "/",
+    path: '/',
     component: Layout, // 使用 Layout 作为布局
     children: [
+      ...dynamicRoutes, // 动态生成的子路由
       {
-        path: "/home", // 子路由路径
-        name: "首页",
-        component: () => import("@/views/home/home.vue"), // 渲染 Home 组件
-      },
-      {
-        path: "/about", // 子路由路径
-        name: "关于",
-        component: () => import("@/views/about/about.vue"), // 渲染 Home 组件
-      },
-      {
-        path: "/", // 默认重定向到 /home
-        redirect: "/home",
+        path: '/', // 默认重定向到 /home
+        redirect: '/home',
       },
     ],
+  },
+  {
+    path: '/:pathMatch(.*)*', // 匹配所有未定义的路径
+    name: 'NotFound',
+    component: () => import('@/views/error/404.vue'), // 404 页面
   },
 ];
 
