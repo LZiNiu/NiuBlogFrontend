@@ -1,15 +1,16 @@
 <template>
     <div ref="headerRef" :class="['header-container', headerClass]">
         <div class="left">
-            <div class="header-avatar-wrapper">
-                <span class="site-title">Cattle Blog</span>
-            </div>
+            <span class="site-title">Cattle Blog</span>
         </div>
-        <div class="right">
-            <el-menu :default-active="$route.path" mode="horizontal" :ellipsis="false" @select="handleSelect">
+        <nav class="right">
+            <el-menu :default-active="$route.path" 
+            mode="horizontal" 
+            :ellipsis="false"
+            menu-trigger="hover" 
+            @select="handleSelect">
                 <div v-for="menu in menuList" :key="menu.path">
                     <el-sub-menu v-if="menu.children.length > 0" :index="menu.path">
-                        <i :class="['iconfont', menu.icon, 'mr-1']"></i>
                         <template #title>{{ menu.title }}</template>
                         <el-menu-item v-for="submenu in menu.children" :index="submenu.path">
                             <i :class="['iconfont', submenu.icon]"></i>
@@ -23,7 +24,7 @@
                 </div>
             </el-menu>
 
-        </div>
+        </nav>
     </div>
 
 </template>
@@ -34,23 +35,24 @@ import { debounce } from '@/utils/tool';
 
 const router = useRouter();
 
+// 静态测试菜单数据
 const menuList = [
     {
         title: '首页',
         path: '/home',
-        icon: 'icon-shouye',
+        icon: 'icon-home',
         children: [],
     },
     {
         title: '关于',
         path: '/about',
-        icon: 'icon-about', // 假设有一个名为 icon-about 的图标
+        icon: 'icon-icon-test', // 假设有一个名为 icon-about 的图标
         children: [],
     },
     {
         title: '时间轴',
         path: '/timeline',
-        icon: 'icon-clock', // 假设有一个名为 icon-about 的图标
+        icon: 'icon-schedule', // 假设有一个名为 icon-about 的图标
         children: [],
     },
     {
@@ -84,7 +86,7 @@ onMounted(() => {
 
     // 获取 header 高度数值
     if (headerRef.value) {
-        SCROLL_THRESHOLD = headerRef.value.clientHeight * 3;
+        SCROLL_THRESHOLD = headerRef.value.clientHeight * 2;
     }
     console.log('Header height:', SCROLL_THRESHOLD);
     window.addEventListener('scroll', debouncedHandleScroll);
@@ -95,7 +97,7 @@ onUnmounted(() => {
 });
 
 
-let headerClass = ref('show-header');
+let headerClass = ref('show-header top');
 function handleScroll() {
 
     const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
@@ -135,6 +137,22 @@ function handleSelect(path: string) {
 }
 </script>
 
+<style lang="scss">
+// el-sub-munu样式在scoped中无法生效
+// 导航栏不在顶部时字体变黑
+.header-container.scrolled {
+    .el-menu {
+        .el-menu-item,
+        .el-sub-menu__title {
+            color: #4c4948;
+            font-weight: bold;
+        }
+    }
+}
+
+
+</style>
+
 <style scoped lang="scss">
 .iconfont {
     font-size: large;
@@ -154,6 +172,7 @@ function handleSelect(path: string) {
 
         .site-title {
             font-weight: bolder;
+            font-size: 1.2rem;
         }
     }
 
@@ -169,27 +188,28 @@ function handleSelect(path: string) {
 
 }
 
+/* 导航栏顶部样式 */
 .header-container.top {
     background-color: transparent;
-    /* 透明背景 */
     box-shadow: none;
 
-    /* 移除阴影 */
     .site-title {
         color: white;
     }
 }
 
+/* 导航栏浏览途中样式 */
 .header-container.scrolled {
     background-color: rgba(255, 255, 255, .7);
+    // background-image: url('@/assets/images/header_bg.jpg');
+    // background-position: center;
 
     .site-title {
         color: black;
-        /* 字体黑色 */
     }
 }
 
-
+/* #region导航栏隐藏出现动画 */
 .hide-header {
     animation-name: hideHeader;
     animation-duration: 0.2s;
@@ -222,4 +242,5 @@ function handleSelect(path: string) {
         transform: translateY(calc(-1 * var(--header-container-h)));
     }
 }
+/* #endregion导航栏隐藏出现动画 */
 </style>
