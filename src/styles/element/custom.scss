@@ -27,6 +27,11 @@
     }
 }
 
+// 对应路由激活时需要保持变色
+.el-menu-item.is-active {
+    color: var(--el-menu-active-color) !important;
+}
+
 /* 去除选中时的背景色 */
 .el-menu--horizontal .el-menu-item:not(.is-disabled):focus,
 .el-menu--horizontal .el-menu-item:not(.is-disabled):hover {

@@ -1,6 +1,6 @@
 <template>
     <div>
-        哎呀,页面找不到了!
+
     </div>
 </template>
 
@@ -8,6 +8,6 @@
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 
 </style>
