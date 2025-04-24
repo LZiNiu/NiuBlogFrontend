@@ -1,25 +1,25 @@
 <template>
     <div id="home-center-box" class="home-center-box mx-auto">
-        <el-row :gutter="20" class="h-[100%]">
+        <el-row :gutter="20" class="w-[100%]">
             <el-col :span="16" class="article-list el-col-full">
                 <Transition name="fade" mode="out-in">
                     <!-- 利用key attribute 来使过渡触发 -->
                     <div :key="currentPage">
-                        <el-card class="h-[11.25rem]" v-for="article in paginatedArticles"
-                            :key="article.id">
+                        <el-card class="md:h-[11.25rem] h-[18.75rem]" v-for="article in articleList"
+                            :key="article.article_id">
                             <RouterLink 
-                            :to="{path:'/article', query: {articleId: article.title}}"
-                            class="article-list-item flex">
-                                <el-image class="article-image h-[100%] max-w-[35%]" :src="home_banner"
+                            :to="{path:'/article', query: {articleId: article.article_id}}"
+                            class="article-list-item h-[100%] flex md:flex-row flex-col overflow-hidden">
+                                <el-image class="article-image md:h-[100%] md:max-w-[35%] w-[100%] h-[45%]" :src="home_banner"
                                     fit="cover" :lazy="true"></el-image>
                                 <div class="article-info ml-[1.5625rem]">
                                     <h3 class="article-title text-2xl">
-                                        <router-link :to="{ path:'/article', query: {articleId: article.title}}">{{ article.title }}</router-link>
+                                        <router-link :to="{ path:'/article', query: {articleId: article.article_id}}">{{ article.article_title }}</router-link>
                                     </h3>
                                     <ul class="article-meta text-sm flex flex-wrap">
                                         
                                         <IcOutlineCalendarMonth class="text-base" />
-                                        <li>{{ article.issuedate }}</li>
+                                        <li>{{ article.created_at }}</li>
 
                                         <IcTwotoneFolderOpen class="text-base" />
                                         <li>
@@ -33,7 +33,7 @@
 
                                     </ul>
                                     <div class="article-desc text-ellipsis">
-                                        {{ article.desc }}
+                                        <!-- {{ article.desc }} -->ababababababababab
                                     </div>
                                 </div>
                             </RouterLink>
@@ -47,10 +47,10 @@
                     v-model:page-size="pageSize"
                     v-model:current-page="currentPage" 
                     :default-current-page="1" 
-                    :total="testArticleList.length" />
+                    :total="total_count" />
                 </div>
             </el-col>
-            <el-col :span="7" class="el-col-0">
+            <el-col :span="8" class="el-col-hidden">
                 <aside class="side-bar">
                     <div class="user-info-card min-h-[400px]">
                         <div class="user-avatar text-center bg-[url(src/assets/images/test1.jpg)] bg-center bg-cover bg-clip-border">
@@ -110,6 +110,7 @@ import IcTwotoneFolderOpen from '~icons/ic/twotone-folder-open';
 import IcOutlineCalendarMonth from '~icons/ic/outline-calendar-month';
 import QlementineIconsTag16 from '~icons/qlementine-icons/tag-16';
 import user_avatar from '@/assets/images/user_avatar.jpg';
+import { homeGetArticleMeta } from '@/api/article';
 
 const testArticleList = [
     {
@@ -121,6 +122,17 @@ const testArticleList = [
         desc: '新功能 js 加载完才显示聊天按钮 移除 Pangu 添加结构化数据支持 添加 avif 到支持的图片格式列表 更新'
     }
 ];
+type Article = {
+    article_title: string;
+    created_at: Date; 
+    updated_at: Date;
+    tags: string;
+    category: string;
+    article_id: number;
+    author_name: string;
+};
+
+type ArticleList = Article[];
 
 testArticleList.push(testArticleList[0]);
 testArticleList.push(testArticleList[0]);
@@ -136,6 +148,26 @@ const paginatedArticles = computed(() => {
     return testArticleList.slice(start, start + pageSize);
 });
 
+const articleList:Ref<ArticleList> = ref([]);
+const total_count = ref(0);
+const fetchArticleMeta = async () => {
+    try {
+        const response = await homeGetArticleMeta(currentPage.value, pageSize);
+        // console.log(response.data);
+        articleList.value = response.data.article_list; // 更新文章列表
+        total_count.value = response.data.total; // 更新总条数
+    } catch (error) {
+        console.error("获取文章数据失败:", error);
+    }
+};
+
+watch(currentPage, ()=>{
+    fetchArticleMeta();
+})
+
+onMounted(() => {
+    fetchArticleMeta();
+});
 
 </script>
 
@@ -147,6 +179,7 @@ const paginatedArticles = computed(() => {
         transition: all 0.2s;
         border-radius: 14px;
         margin: 0 auto;
+        margin-left: .9375rem;
         margin-bottom: var(--home-card-spacing-pc);
     }
     .el-card:hover {
@@ -280,7 +313,7 @@ const paginatedArticles = computed(() => {
 /* #region主页面右侧样式 */
 
 @media screen and (max-width: 768px) {
-    .el-col-0 {
+    .el-col-hidden {
         display: none;
         flex: 0 0 0%;
         max-width: 0;
