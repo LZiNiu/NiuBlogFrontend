@@ -1,6 +1,6 @@
 <template>
-    <transition name="header-fade" mode="out-in">
-        <div id="page-header" class="page-header" v-if="shouldAnimate" :style="{ backgroundImage: `url(${page_bg})` }">
+    <!-- <transition name="header-fade" mode="out-in" appear> -->
+        <div id="page-header" class="page-header" :style="{ backgroundImage: `url(${page_bg})` }">
             <div id="home-banner" class="home-banner" v-if="$route.path == '/home'">
                 
                 <div class="banner-content">
@@ -31,7 +31,7 @@
                 </div>
             </div>
         </div>
-    </transition>
+    <!-- </transition> -->
     
 </template>
 
@@ -40,34 +40,45 @@ import CiChevronDown from '~icons/ci/chevron-down';
 
 const route = useRoute();
 // 背景图路径
-let page_bg = ref(`'src/assets/images/${route.path}_banner.jpg'`);
+const page_bg = ref(`'src/assets/images/${route.path}_banner.jpg'`);
 
-const shouldAnimate = ref(true);
+// 过渡转移到layout main中实现
+// const shouldAnimate = ref(true);
 
 watch(() => route.path, (newPath) => {
 
     // 更新背景图
     page_bg.value = `'src/assets/images/${route.path}_banner.jpg'`;
-
+    if (newPath === '/home') {
+        // 如果路由为 /home，启动打字机效果
+        if (!typingInterval) {
+            typingInterval = setInterval(typeWriter, 200);
+        }
+    } else {
+        // 如果路由不是 /home，清理打字机效果
+        if (typingInterval) {
+            clearInterval(typingInterval); // 调用清理函数
+            typingInterval = null;
+        }
+        currentText.value = ''; // 清空文本
+    }
     // 方案一: v-show同时触发过渡效果和文字动画,同时避免v-if重新渲染
-    // // 隐藏组件以触发动画
+    // 隐藏组件以触发动画
     // shouldAnimate.value = false;
     // // 延迟后显示组件,同时触发文字动画以及pageheader过渡
     // setTimeout(() => {
     //     shouldAnimate.value = true;
-    // }, 10);
-
+    // }, 1000);
+    
     // 方案二: 当使用v-if时才生效,若使用v-show可能会由于rAF执行时间过短造成动画无效,本身pageheader组件不复杂,重新渲染开销可以接受
     // 方案一在频繁切换时仅display的值迅速发生变化,但是可能由于DOM元素来不及重新渲染,动画可能无效,出现闪屏现象,故最终采用方案二
-    shouldAnimate.value = false;
-
-    // 使用 rAF 确保动画与 DOM 更新同步
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            shouldAnimate.value = true; // 显示组件
-        });
-    });
-
+    // shouldAnimate.value = false;
+    // // 使用 rAF 确保动画与 DOM 更新同步
+    // requestAnimationFrame(() => {
+    //     requestAnimationFrame(() => {
+    //         shouldAnimate.value = true; // 显示组件
+    //     });
+    // });
 });
 
 
@@ -87,21 +98,23 @@ function scrollToHomeContent() {
 }
 
 const sayings = ['Hello World!!!', 'Welcome to Cattle Blog']; // 循环显示的文本
-const currentIndex = ref(0); // 当前显示的文本索引
 const currentText = ref(''); // 当前显示的文本
+let currentIndex = 0; // 当前显示的文本索引
 const isDeleting = ref(false); // 是否处于删除状态
-let typingInterval:any = null; // 定时器引用
+let typingInterval: any = null; // 定时器引用
+const typingSpeed = 200;
+const deleteSpeed = 80;
 
 // 打字机效果逻辑
 const typeWriter = () => {
-    const fullText = sayings[currentIndex.value]; // 获取当前完整文本
+    // console.log("正在执行打字机效果!!!");
+    const fullText = sayings[currentIndex]; // 获取当前完整文本
     const textLength = isDeleting.value ? currentText.value.length - 1 : currentText.value.length + 1;
-
+    
     // 更新当前文本
     currentText.value = isDeleting.value
         ? fullText.substring(0, textLength)
         : fullText.substring(0, textLength);
-
     // 判断是否完成打字或删除
     if (!isDeleting.value && currentText.value === fullText) {
         setTimeout(() => {
@@ -109,47 +122,54 @@ const typeWriter = () => {
         }, 1000); // 停留 1 秒后开始删除
     } else if (isDeleting.value && currentText.value === '') {
         isDeleting.value = false; // 停止删除
-        currentIndex.value = (currentIndex.value + 1) % sayings.length; // 切换到下一个文本
+        currentIndex = (currentIndex + 1) % sayings.length; // 切换到下一个文本
     }
 };
 
+watch(isDeleting, () => {
+    if (isDeleting.value) {
+        clearInterval(typingInterval)
+        typingInterval = setInterval(typeWriter, deleteSpeed);
+        console.log("加快了删除速度");
+    }
+    else {
+        clearInterval(typingInterval)
+        typingInterval = setInterval(typeWriter, typingSpeed);
+        
+    }
+})
+
 onMounted(() => {
     if (route.path === '/home')
-        typingInterval = setInterval(typeWriter, 300); // 每 100ms 更新一次
+        if (!typingInterval) {
+            setTimeout(() =>{
+                typingInterval = setInterval(typeWriter, 200);
+            }, 1500); // 等标题动画1s结束后再开始打字
+            
+        }
 });
+
 
 onUnmounted(()=>{
     if (typingInterval) {
         clearInterval(typingInterval);
+        typingInterval = null;
+        console.log("打字机已被清理!!!");
     }
 })
-
-watch(()=>route.path, () =>{
-    if (route.path === '/home' || route.path === '/')
-        typingInterval = setInterval(typeWriter, 300); // 每 100ms 更新一次
-    else{
-        if (typingInterval) {
-            clearInterval(typingInterval);
-            currentText.value = '';
-            console.log('定时器已清理');
-        }
-    }
-})
-
-
 </script>
 
 <style lang="scss" scoped>
 
-.header-fade-enter-active {
-    transition: transform 0.5s ease;
-}
-.header-fade-enter-from  {
-    transform: translateY(-20px);
-}
-.header-fade-enter-to {
-    transform: translateY(0px);
-}
+// .header-fade-enter-active {
+//     transition: transform 0.5s ease;
+// }
+// .header-fade-enter-from  {
+//     transform: translateY(-20px);
+// }
+// .header-fade-enter-to {
+//     transform: translateY(0px);
+// }
 
 .page-header {
     width: 100%;
@@ -230,10 +250,9 @@ watch(()=>route.path, () =>{
         animation: text_scale 1s;
     }
     .banner-saying {
-        display: inline-block;
+        display: block;
         text-align: center;
         overflow: hidden;
-        
 
         &::after {
             content: '';
