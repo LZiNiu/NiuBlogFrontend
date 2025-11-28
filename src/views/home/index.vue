@@ -1,385 +1,167 @@
-<template>
-    <div id="home-center-box" class="home-center-box mx-auto">
-        <el-row :gutter="20" class="w-[100%]">
-            <el-col :span="16" class="article-list el-col-full">
-                <Transition name="fade" mode="out-in">
-                    <!-- 利用key attribute 来使过渡触发 -->
-                    <div :key="currentPage">
-                        <el-card class="md:h-[11.25rem] h-[18.75rem]" v-for="article in articleList"
-                            :key="article.article_id">
-                            <RouterLink 
-                            :to="{path:'/article', query: {articleId: article.article_id}}"
-                            class="article-list-item h-[100%] flex md:flex-row flex-col overflow-hidden">
-                                <el-image class="article-image md:h-[100%] md:max-w-[35%] w-[100%] h-[45%]" :src="home_banner"
-                                    fit="cover" :lazy="true"></el-image>
-                                <div class="article-info ml-[1.5625rem]">
-                                    <h3 class="article-title text-2xl">
-                                        <router-link :to="{ path:'/article', query: {articleId: article.article_id}}">{{ article.article_title }}</router-link>
-                                    </h3>
-                                    <ul class="article-meta text-sm flex flex-wrap">
-                                        
-                                        <IcOutlineCalendarMonth class="text-base" />
-                                        <li>{{ article.created_at }}</li>
-
-                                        <IcTwotoneFolderOpen class="text-base" />
-                                        <li>
-                                            <RouterLink :to="{path:'/category', query: {category: article.category}}">{{ article.category }}
-                                            </RouterLink>
-                                        </li>
-
-                                        <QlementineIconsTag16 class="text-sm" />
-                                        <li class="article-tag" v-for="tag in article.tags" :key="tag">{{ tag
-                                        }}</li>
-
-                                    </ul>
-                                    <div class="article-desc text-ellipsis">
-                                        <!-- {{ article.desc }} -->ababababababababab
-                                    </div>
-                                </div>
-                            </RouterLink>
-                        </el-card>
-                    </div>
-                </Transition>
-                <div class="flex justify-center mt-8">
-                    <el-pagination class="mb-10" 
-                    background layout="prev, pager, next" 
-                    :hide-on-single-page="true"
-                    v-model:page-size="pageSize"
-                    v-model:current-page="currentPage" 
-                    :default-current-page="1" 
-                    :total="total_count" />
-                </div>
-            </el-col>
-            <el-col :span="8" class="el-col-hidden">
-                <aside class="side-bar">
-                    <div class="user-info-card min-h-[400px]">
-                        <div class="user-avatar text-center bg-[url(src/assets/images/test1.jpg)] bg-center bg-cover bg-clip-border">
-                            <el-avatar 
-                            :src="user_avatar" 
-                            fit="cover" 
-                            :size="140"></el-avatar>
-                        </div>
-                        <div class="user-info text-center">
-                            <h3 class="user-name text-2xl">Cattle</h3>
-                            <p class="user-desc">这个人很懒,什么也没有留下</p>
-                            <div class="user-data">
-                                <span>
-                                    <div class="data-name">
-                                        文章
-                                    </div>
-                                    <div class="data-value">
-                                        {{ testArticleList.length }}
-                                    </div>
-                                </span>
-                                <span>
-                                    <div class="data-name">
-                                        浏览量
-                                    </div>
-                                    <div class="data-value">
-                                        {{ testArticleList.length }}
-                                    </div>
-                                </span>
-                                <span>
-                                    <div class="data-name">
-                                        分类
-                                    </div>
-                                    <div class="data-value">
-                                        {{ testArticleList.length }}
-                                    </div>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="related-link min-h-[5rem] text-center">
-                            <a href="#" class="card-info-btn inline-block text-center w-[60%] 
-                            mt-3 rounded-lg bg-[#49b1f5]">
-                                <i class="iconfont icon-GitHub mr-1.5"></i>GitHub
-                            </a>
-                        </div>
-                    </div>
-                </aside>
-            </el-col>
-        </el-row>
-
-
-    </div>
-</template>
-
 <script setup lang="ts">
-import home_banner from '@/assets/images/home_banner.jpg';
-import IcTwotoneFolderOpen from '~icons/ic/twotone-folder-open';
-import IcOutlineCalendarMonth from '~icons/ic/outline-calendar-month';
-import QlementineIconsTag16 from '~icons/qlementine-icons/tag-16';
-import user_avatar from '@/assets/images/user_avatar.jpg';
-import { homeGetArticleMeta } from '@/api/article';
+import HomeBanner from './home-banner/index.vue'
+import ProfileCard from './profile-card/index.vue'
+import NoticeCard from './notice-card/index.vue'
+import { useArticleStore } from '@/stores/article'
 
-const testArticleList = [
-    {
-        id: 1,
-        title: 'Butterfly 文档(一) 快速开始',
-        issuedate: '2020-05-28',
-        category: '博客部署',
-        tags: ['Vue', 'React', 'Flutter'],
-        desc: '新功能 js 加载完才显示聊天按钮 移除 Pangu 添加结构化数据支持 添加 avif 到支持的图片格式列表 更新'
+defineOptions({ name: 'Home' })
+const currentPage = ref(1)
+const pageSize = 5
+
+const articleStore = useArticleStore()
+
+const articleCardList: Ref<Api.ArticleCardInfoList> = ref([])
+const total_count = ref(0)
+const loading = ref(true)
+const fetchArticleCardInfo = async () => {
+  loading.value = true
+  try {
+    // 获取当前页文章基础信息列表
+    const data = await articleStore.fetchArticleList(
+      currentPage.value,
+      pageSize
+    ) // 更新文章列表
+    if (data) {
+      total_count.value = data.total // 更新总条数
+      articleCardList.value = data.records ? data.records : [] // 更新文章列表
+    } else {
+      console.log('未获取到文章数据')
     }
-];
-type Article = {
-    article_title: string;
-    created_at: Date; 
-    updated_at: Date;
-    tags: string;
-    category: string;
-    article_id: number;
-    author_name: string;
-};
+  } catch (error) {
+    console.error('获取文章数据失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
-type ArticleList = Article[];
-
-testArticleList.push(testArticleList[0]);
-testArticleList.push(testArticleList[0]);
-testArticleList.push(testArticleList[0]);
-testArticleList.push(testArticleList[0]);
-testArticleList.push(testArticleList[0]);
-testArticleList.push(testArticleList[0]);
-
-let currentPage = ref(1);
-const pageSize = 5;
-const paginatedArticles = computed(() => {
-    const start = (currentPage.value - 1) * pageSize;
-    return testArticleList.slice(start, start + pageSize);
-});
-
-const articleList:Ref<ArticleList> = ref([]);
-const total_count = ref(0);
-const fetchArticleMeta = async () => {
-    try {
-        const response = await homeGetArticleMeta(currentPage.value, pageSize);
-        // console.log(response.data);
-        articleList.value = response.data.article_list; // 更新文章列表
-        total_count.value = response.data.total; // 更新总条数
-    } catch (error) {
-        console.error("获取文章数据失败:", error);
-    }
-};
-
-watch(currentPage, ()=>{
-    fetchArticleMeta();
-})
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val
+  fetchArticleCardInfo()
+}
 
 onMounted(() => {
-    fetchArticleMeta();
-});
-
+  fetchArticleCardInfo()
+})
 </script>
 
-<style scoped lang="scss">
-.home-center-box {
-    width: 100%;
+<template>
+  <div class="home-container -mt-16">
+    <!-- -mt-16 用于抵消 Layout 中 container 的 mt-16, 让 Banner 能够顶到页面最上方 -->
+    <!-- 或者修改 Layout 的结构，这里假设我们需要Banner全屏 -->
 
-    .el-card {
-        transition: all 0.2s;
-        border-radius: 14px;
-        margin: 0 auto;
-        margin-left: .9375rem;
-        margin-bottom: var(--home-card-spacing-pc);
-    }
-    .el-card:hover {
-        box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.3);
-        transform: translateY(-2px);
-    }
+    <!-- 1. Banner 区域 -->
+    <HomeBanner />
+
+    <!-- 2. 内容展示区 -->
+    <div
+      id="content-start"
+      class="container mx-auto px-4 py-12"
+    >
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- 左侧：个人信息 & 侧边栏 -->
+        <aside class="lg:col-span-1 space-y-6">
+          <!-- 个人卡片 -->
+          <div class="sticky top-20 transition-all duration-300">
+            <ProfileCard />
+            <NoticeCard />
+          </div>
+        </aside>
+
+        <!-- 右侧：文章列表 -->
+        <div class="lg:col-span-3">
+          <!-- 文章列表标题 (可选) -->
+          <div
+            class="flex items-center justify-between mb-6 pb-2 border-b border-slate-200 dark:border-slate-700"
+          >
+            <h2
+              class="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"
+            >
+              <span class="w-2 h-8 bg-indigo-600 rounded-full"></span>
+              文章列表
+            </h2>
+          </div>
+
+          <!-- 加载骨架屏 (Skeleton) -->
+          <div
+            v-if="loading"
+            class="space-y-4"
+          >
+            <el-skeleton
+              :rows="5"
+              animated
+            />
+            <el-skeleton
+              :rows="5"
+              animated
+            />
+          </div>
+
+          <!-- 列表循环 -->
+          <div
+            v-else
+            class="space-y-6"
+          >
+            <!-- 这里使用你封装好的 ArticleCard -->
+            <!-- 如果没有引入，请确保你的全局组件已注册 -->
+            <ArticleCard
+              v-for="article in articleCardList"
+              :key="article.id"
+              :card-info="article"
+            />
+
+            <!-- 空状态 -->
+            <el-empty
+              v-if="articleCardList.length === 0"
+              description="暂无文章"
+            />
+          </div>
+
+          <!-- 分页 -->
+          <div class="mt-10 flex justify-center">
+            <el-pagination
+              background
+              layout="prev, pager, next"
+              :total="total_count"
+              :page-size="pageSize"
+              v-model:current-page="currentPage"
+              @current-change="handleCurrentChange"
+              class="custom-pagination"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* 针对 Element Plus Pagination 的样式覆盖，使其符合主题 */
+:deep(.custom-pagination .el-pager li) {
+  background-color: transparent;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-weight: 500;
+}
+:deep(.custom-pagination .el-pager li.is-active) {
+  background-color: #4f46e5; /* indigo-600 */
+  border-color: #4f46e5;
+  color: white;
+}
+:deep(.custom-pagination .btn-prev),
+:deep(.custom-pagination .btn-next) {
+  background-color: transparent;
+  border: 1px solid #e2e8f0;
 }
 
-
-/* #region切换分页时的过渡动画样式 */
-.fade-enter-active {
-    animation: slide-fade-in 0.5s ease-out; // 进入动画
+/* 暗黑模式适配 */
+.dark :deep(.custom-pagination .el-pager li) {
+  border-color: #334155;
+  color: #94a3b8;
 }
-
-.fade-leave-active {
-    animation: slide-fade-out 0.5s ease-in; // 离开动画
+.dark :deep(.custom-pagination .btn-prev),
+.dark :deep(.custom-pagination .btn-next) {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
 }
-
-/* 进入动画的关键帧 */
-@keyframes slide-fade-in {
-    0% {
-        opacity: 0;
-        transform: translateY(3.125rem);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* 离开动画的关键帧 */
-@keyframes slide-fade-out {
-    0% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translateY(3.125rem);
-    }
-}
-/* #endregion切换分页时的过渡动画样式 */ 
-
-/* #region主页面左侧样式 */
-.article-list {
-    margin-top: 3.125rem;
-
-    .article-list-item {
-        width: 100%;
-        height: 100%;
-        cursor: default;
-
-        .article-info {
-            height: 100%;
-            flex: 1;
-
-            .article-title {
-                margin-top: .75rem;
-                display: -webkit-box;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                -webkit-line-clamp: 1; /* 最多显示1行 */
-                line-clamp: 1; //去除警告
-                
-            }
-            .article-title > a {
-                transition: all 0.2s;
-            }
-            .article-title a:hover {
-                color: #49b1f5;
-            }
-            .article-meta {
-                margin-top: 15px;
-                margin-bottom: 10px;
-            }
-            .article-meta > li {
-                margin-left: .25rem; // 控制与图标的距离
-                
-                a {
-                    transition: all 0.2s;
-                }
-                a:hover {
-                    color: #49b1f5;
-                    text-decoration: underline solid #49b1f5;
-                }
-
-                // 分隔符
-                &:not(:last-child):not(.article-tag) {
-                    &::after {
-                        content: '';
-                        border-left: 2px solid gray;
-                        margin-left: .25rem;
-                        margin-right: .375rem;
-                    }
-                }
-
-                // 标签文字顿号
-                &.article-tag {
-                    // 选择第一个list-item外的list-item
-                    &~ li.article-tag {
-                        margin: 0;
-                    }
-                    // 选择最后一个list-item外的list-item
-                    &:not(:last-child) {
-                        &::after {
-                            content: '、';
-                        }
-                    }
-                    
-                }
-            }
-            
-
-            .article-desc {
-                display: -webkit-box;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                -webkit-line-clamp: 2; /* 最多显示两行 */
-                line-clamp: 2; //去除警告
-            }
-        }
-    }
-    
-}
-/* #endregion */
-
-/* #region主页面右侧样式 */
-
-@media screen and (max-width: 768px) {
-    .el-col-hidden {
-        display: none;
-        flex: 0 0 0%;
-        max-width: 0;
-    }
-    .article-list.el-col-full {
-        
-        flex: 0 0 100%;
-        max-width: 100%;
-        .el-card {
-            max-width: 90%;
-            margin-bottom: var(--home-card-spacing-mobile);
-        }
-    }
-}
-@media screen and (min-width: 768px) {
-    .home-center-box {
-        max-width: 1280px;
-    }
-}
-.side-bar {
-    width: 100%;
-    height: 100%;
-    margin-left: .9375rem;
-}
-.user-info-card {
-    width: 90%;
-    margin-top: 3.125rem;
-    padding: 10px;
-    background-color: var(--el-fill-color-blank);
-    border-radius: 14px;
-    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
-    overflow: hidden;
-    
-    .el-avatar {
-        margin-top: 1.875rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .user-info {
-        
-        .user-data {
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-evenly;
-            & > span {
-                display: block;
-            }
-        }
-    }
-    
-    .related-link {
-        
-        .card-info-btn {
-            font-size: 17px;
-            transition: background-color 0.3s;
-            cursor: pointer;
-        }
-        .card-info-btn:hover {
-            background-color: #ff7242;
-        }
-
-        .iconfont {
-            font-size: 20px;
-        }
-    }
-}
-/* #endregion */
-
 </style>
