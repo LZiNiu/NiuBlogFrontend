@@ -1,73 +1,289 @@
-<template>
-    <div class="article-container mx-auto max-w-[90vw]">
-        <el-row :gutter="15">
-            <el-col :span="18">
-                <el-card class="my-[2.25rem] mx-auto">
-                    <article class="content-area box-content px-[0.8rem]">
-                        <MdPreview :id="id" :modelValue="md_state.article_text" :preview-theme="md_state.preview_theme"/>
-                    </article>
-                </el-card>
-            </el-col>
-            <el-col :span="5">
-                <el-affix :offset="30">
-                    <el-card class="my-[2.25rem]">
-                        <nav class="article-outline my-[.9375rem]">
-                            <MdCatalog :editorId="id" :scrollElement="scrollElement" />
-                        </nav>
-                    </el-card>
-                </el-affix>
-                
-            </el-col>
-        </el-row>
-    </div>
-</template>
-
 <script setup lang="ts">
-import { getArticle } from '@/api/article';
-import { MdPreview, MdCatalog } from 'md-editor-v3';
-import 'md-editor-v3/lib/preview.css';
-const id = 'preview-only';
-const md_state = reactive({
-    article_text: "# 测试标题\n通常我们的项目里都会封装axios 而比较重要的则是如何拦截axios的返回值 对返回值进行过滤后 再返回给我们的请求方法 这样的好处是可以对返回值进行一次预处理 或者是全局处理等\n\n而最近我在使用项目里二次封装的axios时 遇到了一个问题 代码如下\n```js\n// 添加响应拦截器\nhttp.interceptors.response.use(\n  function (response) {\n    return response.data;\n  },\n  function (error) {\n    return Promise.reject(error);\n  }\n);\n```\n\n上面是简化过的代码 就是在进行响应拦截时 我们遇到正常的请求 是直接返回 response.data 从而我们可以在 .then 回调里拿到返回的数据 但是当后端报错了 走 error 回调的时候 我们返回的是 一个Premise.rejcet(error) 我们无法通过.then获取到返回的数据\n有这样一个场景 如果我们是点击保存的时候 给按钮增加了一个loading效果 那我们怎么知道后端报错了 然后关闭loading呢 我去 MDN官方文档上看了Promise的使用方法 [Promise.reject](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Promise/reject) 原来使用 .catch方法就可以捕获到reject返回的错误 一直没有处理过类似的问题 所以一直不知道这个使用方式 说起来挺尴尬的 公司里大部分人都不知道可以这样 \n\n其实后端报错不应该返回 status = 500 因为那种保存报错不是 服务器/后端代码 的错误 而是后端在校验数据时抛出的错误 后端图方便 直接抛的是全局异常 并没有定义规范的 code 和错误信息去抛出 而是直接暴力抛出全局异常 这样的异常http状态是 500 对前端非常不友好 因为 我们需要去 .catch 才能捕获到异常 \n而如果接口返回 http状态是 200 且定义了 错误 code 和错误信息 我们只需要在 .then 方法里去判断code即可 \n\n实际上 http 状态是 500 这种错误应该是服务端代码写的有问题 正常的错误提示不应该用 500 的状态 应该使用错误code 和提示信息 不过能学习到 promise.catch方法还是挺开心的\n",
-    preview_theme: 'vuepress'
-});
-const scrollElement = document.body;
+import { ref, onMounted, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useArticleStore, type ArticleDetail } from '@/stores/article'
+import { useDateFormat, useDark, useWindowScroll } from '@vueuse/core'
+import { Icon } from '@iconify/vue'
+import { MdPreview, MdCatalog } from 'md-editor-v3'
+import 'md-editor-v3/lib/preview.css'
 
-const route = useRoute();
-const articleId = +(route.query.articleId || -1);
-let article_meta_info = {};
-onMounted(() => {
-    console.log(articleId);
-    fetchArticle();
-});
-// 获取文章数据
-const fetchArticle = async () => {
-    try {
-        if (articleId === -1) {
-            console.log('文章id类型有误');
-            return;
-        }
-        const response = await getArticle(articleId);
-        md_state.article_text = response.data.content;
-        const{content, ...restfield} = response.data;
-        article_meta_info = {...restfield};
-        console.log(article_meta_info);
-    } catch (error) {
-        console.error("获取文章数据失败:", error);
-    }
-};
+const route = useRoute()
+const router = useRouter()
+const store = useArticleStore()
+const articleId = route.query.id as string
+const article = ref<ArticleDetail | null>(null)
+const loading = ref(true)
 
-</script>
+// 暗黑模式
+const isDark = useDark()
+const theme = computed(() => isDark.value ? 'dark' : 'light')
 
-<style lang="scss">
+// 目录配置
+const scrollElement = document.documentElement
+const editorId = 'preview-only'
 
-.article-container .el-card {
-    border-radius: 10px;
+// 滚动监听 (用于回到顶部)
+const { y } = useWindowScroll()
+const showBackToTop = computed(() => y.value > 300)
+
+// 获取数据
+const fetchDetail = async () => {
+  loading.value = true
+  try {
+    const data = await store.fetchArticleDetail(articleId)
+    if (data) article.value = data
+  } catch (error) {
+    console.error('获取文章详情失败:', error)
+    router.push('/404')
+  } finally {
+    loading.value = false
+  }
 }
 
+// 格式化时间
+const formatDate = (date: string | Date) => useDateFormat(date, 'YYYY-MM-DD HH:mm').value
+
+// 跳转分类
+const handleCategoryClick = (categoryId: number) => {
+  router.push({ path: '/category', query: { id: categoryId } })
+}
+
+// 回到顶部
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+onMounted(() => {
+  fetchDetail()
+  // 设置回到页面顶部
+  scrollToTop()
+})
+</script>
+
+<template>
+  <div class="container mx-auto px-4 py-8 relative min-h-screen">
+    
+    <!-- 1. 顶部导航：美化后的回到首页按钮 -->
+    <div class="mb-8">
+      <button 
+        @click="router.push('/')"
+        class="group flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-300"
+      >
+        <div class="p-1 rounded-full bg-slate-100 dark:bg-slate-700 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900 transition-colors">
+           <Icon icon="mdi:arrow-left" class="text-slate-600 dark:text-slate-300 group-hover:text-indigo-600" />
+        </div>
+        <span class="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">回到首页</span>
+      </button>
+    </div>
+
+    <div v-if="loading" class="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-sm">
+      <el-skeleton :rows="10" animated />
+    </div>
+
+    <!-- 2. 主体布局：增加 items-start 确保右侧 Sticky 生效 -->
+    <div v-else-if="article" class="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+      
+      <!-- 左侧：文章内容 -->
+      <div class="lg:col-span-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden pb-10">
+        
+        <!-- 封面图 -->
+        <div v-if="article.info.cover_url" class="w-full h-64 md:h-80 overflow-hidden relative group">
+          <img :src="article.info.cover_url" alt="Cover" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent"></div>
+          <div class="absolute bottom-0 left-0 p-6 md:p-8 w-full">
+             <h1 class="text-3xl md:text-4xl font-bold leading-tight text-white drop-shadow-md mb-4">
+              {{ article.info.title }}
+            </h1>
+          </div>
+        </div>
+
+        <div class="px-6 md:px-10 pt-8">
+          <!-- 无封面时的标题 -->
+          <h1 v-if="!article.info.cover_url" class="text-3xl md:text-4xl font-bold text-slate-800 dark:text-slate-100 mb-6 leading-tight">
+            {{ article.info.title }}
+          </h1>
+
+          <!-- 3. 改进后的元信息区域：流式布局 + 点击跳转 -->
+          <!-- flex-wrap 让内容过多时自动换行；items-center 垂直居中 -->
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-500 dark:text-slate-400 mb-8 pb-6 border-b border-slate-100 dark:border-slate-700">
+            
+            <!-- 作者 -->
+            <div class="flex items-center gap-1.5">
+              <Icon icon="mdi:account-circle" class="text-lg text-indigo-500" />
+              <span class="font-medium text-slate-700 dark:text-slate-200">{{ article.info.author_name }}</span>
+            </div>
+
+            <!-- 时间 -->
+            <div class="flex items-center gap-1.5">
+              <Icon icon="mdi:calendar-clock" class="text-lg" />
+              <span>创建于 {{ formatDate(article.info.create_time) }}</span>
+            </div>
+            <div v-if="article.info.update_time" class="flex items-center gap-1.5" title="最后更新">
+              <Icon icon="mdi:update" class="text-lg" />
+              <span>更新于 {{ formatDate(article.info.update_time) }}</span>
+            </div>
+
+            <!-- 分类 (可点击) -->
+            <!-- 使用 v-for 遍历分类 ID (这里假设 category_names 和 category_ids 是一一对应的，或者 info 里直接有对象数组) -->
+            <!-- 假设 info.category_ids 和 info.category_names 是对应数组 -->
+            <div class="flex items-center gap-3">
+              <div 
+                v-for="(name, index) in article.info.category_names" 
+                :key="index"
+                class="flex items-center gap-1 cursor-pointer hover:text-indigo-600 transition-colors"
+                @click="handleCategoryClick(article.info.category_ids[index])"
+              >
+                <Icon icon="mdi:folder-open" class="text-indigo-400" />
+                <span>{{ name }}</span>
+              </div>
+            </div>
+
+            <!-- 标签 -->
+            <div v-if="article.info.tag_names?.length" class="flex items-center gap-2">
+              <Icon icon="mdi:tag-outline" />
+              <div class="flex flex-wrap gap-2">
+                <span v-for="(tag, index) in article.info.tag_names" :key="index" class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-xs">
+                  #{{ tag }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 阅读/点赞 (放在流中) -->
+            <div class="flex items-center gap-4 ml-auto md:ml-0">
+               <span class="flex items-center gap-1" title="阅读量"><Icon icon="mdi:eye-outline" /> {{ article.info.view_count }}</span>
+               <span class="flex items-center gap-1 hover:text-red-500 cursor-pointer transition-colors" title="点赞"><Icon icon="mdi:heart-outline" /> {{ article.info.like_count }}</span>
+            </div>
+
+          </div>
+
+          <!-- 正文 -->
+          <MdPreview :editorId="editorId" :modelValue="article.content" :theme="theme" class="article-preview-custom" />
+        </div>
+      </div>
+
+      <!-- 右侧：目录 -->
+      <!-- sticky top-24: 距离视口顶部 6rem (约 96px) 固定 -->
+      <aside class="hidden lg:block lg:col-span-1 sticky top-24">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar">
+          <div class="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-100 mb-4 pb-2 border-b border-slate-100 dark:border-slate-700">
+            <Icon icon="mdi:format-list-bulleted-type" class="text-indigo-500 text-xl" />
+            <span>Outline</span>
+          </div>
+          <!-- offsetTop: 标题距离顶部该像素时高亮当前目录项
+              scrollElementOffsetTop: 滚动区域的固定顶部高度 -->
+          <MdCatalog 
+            :editorId="editorId" 
+            :scrollElement="scrollElement" 
+            :theme="theme"
+            :offsetTop="80"
+            :scrollElementOffsetTop="70"
+            class="custom-catalog"
+          />
+        </div>
+      </aside>
+
+    </div>
+    
+    <el-empty v-else description="Article not found" />
+
+    <!-- 4. 回到顶部按钮 -->
+    <transition name="fade">
+      <button 
+        v-if="showBackToTop"
+        @click="scrollToTop"
+        class="fixed bottom-10 right-10 z-50 p-3 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 hover:-translate-y-1 transition-all duration-300"
+        title="回到顶部"
+      >
+        <Icon icon="mdi:arrow-up" class="text-2xl" />
+      </button>
+    </transition>
+  </div>
+</template>
+
+<style scoped>
+/* MdPreview 样式微调 */
+.article-preview-custom {
+  --md-bk-color: transparent !important; 
+  padding: 0 !important; /* 移除默认内边距，交由外层 div 控制 */
+}
+
+/* 目录样式深度定制 */
+.custom-catalog {
+  /* 增加行间距 */
+  line-height: 2 !important; 
+}
+
+/* 目录项通用样式 */
+:deep(.md-editor-catalog-link) {
+  display: block;
+  padding: 6px 0;
+  color: #64748b; /* slate-500 */
+  border-left: 2px solid transparent; /* 左侧指示条预留 */
+  padding-left: 12px; /* 给文字留点空隙 */
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+
+/* 缩进控制：不同级别的标题增加左缩进 */
+/* md-editor 生成的 class 是 .md-editor-catalog-link-h1, -h2 等 */
+:deep(.md-editor-catalog-link-h1) { margin-left: 0; font-weight: bold; }
+:deep(.md-editor-catalog-link-h2) { margin-left: 10px; }
+:deep(.md-editor-catalog-link-h3) { margin-left: 24px; font-size: 0.85rem; }
+:deep(.md-editor-catalog-link-h4) { margin-left: 36px; font-size: 0.85rem; }
+
+/* 滚动条 */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+/* 回到顶部动画 */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
 
-<style scoped lang="scss">
+<style lang="scss">
+/* 
+  1. 解决 Header 遮挡问题的终极方案 
+  直接定义 html 元素的滚动内边距。
+  Header 高度约 64px (4rem)，这里设为 80px 留出余量。
+  这样无论是点击目录，还是 URL 带 hash 跳转，都会停在距离顶部 80px 的位置。
+*/
+html {
+  scroll-padding-top: 100px;
+}
+.md-editor-catalog-indicator {
+  display: none !important; /* 隐藏默认指示器 */
+}
+/* 
+  2. 暗黑模式大纲配色
+*/
 
+/* 普通模式 */
+.md-editor-catalog-active > span {
+  color: #4f46e5 !important; /* indigo-600 */
+  font-weight: 600;
+}
+.md-editor-catalog-link span:hover {
+  color: #4f46e5 !important;
+}
+
+/* 暗黑模式 */
+.dark .md-editor-catalog-active > span {
+  color: #38bdf8 !important; /* sky-400: 清爽的天蓝色 */
+  font-weight: 600;
+}
+
+.dark .md-editor-catalog-link span:hover {
+  color: #38bdf8 !important;
+  background-color: transparent !important; /* 确保去除背景 */
+}
+/* 
+  4. 调整未选中项在暗黑模式下的颜色 
+  让非高亮的标题稍微暗一点，形成层级对比
+*/
+.dark .md-editor-catalog-link {
+  color: #94a3b8 !important; /* slate-400 */
+}
 
 </style>

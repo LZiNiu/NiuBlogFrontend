@@ -6,9 +6,9 @@ import { Icon } from '@iconify/vue'
 const typewriterText = ref('')
 const phrases = [
   "Hello, I'm Cattle.",
-  "Welcome to my technical blog.",
-  "Exploring Vue, Vite, and Tailwind.",
-  "Keep coding, keep learning."
+  'Welcome to my technical blog.',
+  'Exploring Vue, Vite, and Tailwind.',
+  'Keep coding, keep learning.'
 ]
 let loopNum = 0
 let isDeleting = false
@@ -18,18 +18,18 @@ let timer: any = null
 const tick = () => {
   const i = loopNum % phrases.length
   const fullTxt = phrases[i]
-  
+
   if (isDeleting) {
     txt = fullTxt.substring(0, txt.length - 1)
   } else {
     txt = fullTxt.substring(0, txt.length + 1)
   }
-  
+
   typewriterText.value = txt
-  
+
   let typeSpeed = 150 - Math.random() * 100
   if (isDeleting) typeSpeed /= 2
-  
+
   if (!isDeleting && txt === fullTxt) {
     typeSpeed = 2000
     isDeleting = true
@@ -38,7 +38,7 @@ const tick = () => {
     loopNum++
     typeSpeed = 500
   }
-  
+
   timer = setTimeout(tick, typeSpeed)
 }
 
@@ -64,10 +64,11 @@ const bgImage = bgimg
 </script>
 
 <template>
-  <div class="relative w-full h-[60vh] min-h-[500px] flex flex-col justify-center items-center overflow-hidden text-white">
-    
+  <div
+    class="relative w-full h-[60vh] min-h-[500px] flex flex-col justify-center items-center overflow-hidden text-white"
+  >
     <!-- 1. 背景图片层 -->
-    <div 
+    <div
       class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[10s] hover:scale-105"
       :style="{ backgroundImage: `url(${bgImage})` }"
     ></div>
@@ -78,17 +79,28 @@ const bgImage = bgimg
 
     <!-- 3. 内容区域 -->
     <div class="z-10 text-center space-y-6 px-4 mb-10">
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight drop-shadow-2xl animate-fade-in-up">
+      <h1
+        class="text-5xl md:text-7xl font-extrabold tracking-tight drop-shadow-2xl animate-fade-in-up"
+      >
         Cattle Blog
       </h1>
-      <div class="h-8 text-xl md:text-2xl font-mono text-gray-200 drop-shadow-md">
-        {{ typewriterText }}<span class="animate-pulse ml-1">|</span>
+      <div
+        class="h-8 text-xl md:text-2xl font-mono text-gray-200 drop-shadow-md"
+      >
+        {{ typewriterText }}
+        <span class="animate-pulse ml-1">|</span>
       </div>
     </div>
 
     <!-- 向下滚动箭头 -->
-    <div class="absolute bottom-24 z-10 animate-bounce cursor-pointer opacity-90 hover:opacity-100" @click="scrollToContent">
-      <Icon icon="mdi:chevron-down" class="text-5xl drop-shadow-lg" />
+    <div
+      class="absolute bottom-24 z-10 animate-bounce cursor-pointer opacity-90 hover:opacity-100"
+      @click="scrollToContent"
+    >
+      <Icon
+        icon="mdi:chevron-down"
+        class="text-5xl drop-shadow-lg"
+      />
     </div>
 
     <!-- 4. 动态波浪效果 -->
@@ -96,24 +108,55 @@ const bgImage = bgimg
       fill-slate-50: 必须与你的网页背景色(Layout背景)一致 
       dark:fill-slate-900: 暗黑模式下的背景色
     -->
-    <div class="absolute bottom-0 left-0 w-full h-[15vh] min-h-[60px] z-20">
-      <svg 
-        class="waves w-full h-full" 
-        xmlns="http://www.w3.org/2000/svg" 
-        xmlns:xlink="http://www.w3.org/1999/xlink" 
-        viewBox="0 24 150 28" 
-        preserveAspectRatio="none" 
+    <!-- 1. 容器高度调整: - 移动端: h-[10vh] min-h-[60px]
+    (降低高度，避免小屏下波浪拉伸太严重或出现空白) - 桌面端(md): md:h-[15vh]
+    md:min-h-[100px] (大屏保持原有大气高度) - -mb-1: 一个经典的 Hack，消除 SVG
+    和下方容器之间可能存在的 1px 渲染缝隙 
+    2. SVG 属性: - class="w-full h-full
+    block": block 消除行内元素基线对齐导致的空隙 - preserveAspectRatio="none":
+    核心属性，强制 SVG 忽略比例，填满整个容器宽高 -->
+    <div
+      class="absolute bottom-0 left-0 w-full h-[10vh] min-h-[60px] md:h-[15vh] md:min-h-[100px] z-20 -mb-1"
+    >
+      <svg
+        class="w-full h-full block"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        viewBox="0 24 150 28"
+        preserveAspectRatio="none"
         shape-rendering="auto"
       >
         <defs>
-          <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+          <path
+            id="gentle-wave"
+            d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z"
+          />
         </defs>
         <g class="parallax">
-          <!-- 四层波浪，不同透明度、不同速度 -->
-          <use xlink:href="#gentle-wave" x="48" y="0" class="fill-slate-50/70 dark:fill-slate-900/70 animate-wave-1" />
-          <use xlink:href="#gentle-wave" x="48" y="3" class="fill-slate-50/50 dark:fill-slate-900/50 animate-wave-2" />
-          <use xlink:href="#gentle-wave" x="48" y="5" class="fill-slate-50/30 dark:fill-slate-900/30 animate-wave-3" />
-          <use xlink:href="#gentle-wave" x="48" y="7" class="fill-slate-50 dark:fill-slate-900 animate-wave-4" />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="0"
+            class="fill-slate-50/70 dark:fill-slate-900/70 animate-wave-1"
+          />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="3"
+            class="fill-slate-50/50 dark:fill-slate-900/50 animate-wave-2"
+          />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="5"
+            class="fill-slate-50/30 dark:fill-slate-900/30 animate-wave-3"
+          />
+          <use
+            xlink:href="#gentle-wave"
+            x="48"
+            y="7"
+            class="fill-slate-50 dark:fill-slate-900 animate-wave-4"
+          />
         </g>
       </svg>
     </div>
@@ -126,8 +169,14 @@ const bgImage = bgimg
   animation: fadeInUp 1s ease-out;
 }
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- 动态波浪 CSS 动画 --- */
@@ -136,10 +185,18 @@ const bgImage = bgimg
    通过给不同的 use 标签设置不同的 duration (时长) 和 delay (延迟)，
    制造出波浪起伏错落的视觉效果。
 */
-.animate-wave-1 { animation: move-forever 25s cubic-bezier(.55,.5,.45,.5) infinite; }
-.animate-wave-2 { animation: move-forever 20s cubic-bezier(.55,.5,.45,.5) infinite; }
-.animate-wave-3 { animation: move-forever 13s cubic-bezier(.55,.5,.45,.5) infinite; }
-.animate-wave-4 { animation: move-forever 10s cubic-bezier(.55,.5,.45,.5) infinite; }
+.animate-wave-1 {
+  animation: move-forever 25s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+}
+.animate-wave-2 {
+  animation: move-forever 20s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+}
+.animate-wave-3 {
+  animation: move-forever 13s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+}
+.animate-wave-4 {
+  animation: move-forever 10s cubic-bezier(0.55, 0.5, 0.45, 0.5) infinite;
+}
 
 @keyframes move-forever {
   0% {
