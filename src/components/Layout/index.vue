@@ -4,7 +4,7 @@
   >
     <BlogHeader />
     <!-- 主体内容 -->
-    <main class="grow container mx-auto mt-16 relative">
+    <main class="grow w-full mt-16 relative">
       <!-- 路由视图 + 过渡动画 -->
       <router-view v-slot="{ Component, route }">
         <transition :name="route.meta.transition || 'fade-slide'" mode="out-in">

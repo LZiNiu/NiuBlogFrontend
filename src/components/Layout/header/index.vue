@@ -302,7 +302,7 @@ const getUnderlineClass = (path: string) => {
   <el-drawer
     v-model="drawerVisible"
     direction="ltr"
-    size="45%"
+    size="65%"
     :with-header="false"
     class="mobile-aside"
   >
@@ -402,7 +402,5 @@ const getUnderlineClass = (path: string) => {
 </template>
 
 <style lang="scss" scoped>
-.mobile-aside :deep(.el-drawer__body) {
-  padding: 0;
-}
+
 </style>
