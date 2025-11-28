@@ -1,0 +1,19 @@
+/* 全局重置与背景设定 */
+/* body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  background-image: linear-gradient(to bottom right, #eef2ff, #ffffff, #f0fdfd);;
+  background-attachment: fixed;
+  color: #303133;
+} */
+
+/* 覆盖 Element Plus Menu 的默认背景，使其透明以便融入我们的设计 */
+/* .el-menu {
+  border-right: none !important;
+  background-color: transparent !important;
+} */
+/* 去除水平菜单底部的默认边框线，我们自己控制 */
+/* .el-menu--horizontal {
+  border-bottom: none !important;
+} */
