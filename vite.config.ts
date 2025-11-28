@@ -1,16 +1,15 @@
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, URL } from "node:url";
 
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueDevTools from 'vite-plugin-vue-devtools'
-import tailwindcss from '@tailwindcss/vite'
-import AutoImport from 'unplugin-auto-import/vite'
-import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vueDevTools from "vite-plugin-vue-devtools";
+import tailwindcss from "@tailwindcss/vite";
+import AutoImport from "unplugin-auto-import/vite";
+import Components from "unplugin-vue-components/vite";
+import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 // icon 插件
-import Icons from "unplugin-icons/vite"
-
+import Icons from "unplugin-icons/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -19,7 +18,7 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     AutoImport({
-      imports: ['vue', 'vue-router'],
+      imports: ["vue", "vue-router"],
       resolvers: [ElementPlusResolver()],
       dts: "./auto-imports.d.ts",
     }),
@@ -27,15 +26,28 @@ export default defineConfig({
       resolvers: [ElementPlusResolver()],
     }),
     Icons({
-      compiler: 'vue3',// 指定编译器
-      autoInstall: true,// 自动安装
-  }),
-
+      compiler: "vue3", // 指定编译器
+      autoInstall: true, // 自动安装
+    }),
+    basicSsl(),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
 
-})
+  server: {
+    host: "127.0.0.1",
+    port: 8080,
+    cors: true,
+    https: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:8000",
+        changeOrigin: true,
+        // rewrite: (path) => path.replace(/^\/api\/v1/, '/api/v1'),
+      },
+    },
+  },
+});
