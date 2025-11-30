@@ -1,0 +1,40 @@
+
+.md-editor-catalog-indicator {
+  display: none !important; /* 隐藏默认指示器 */
+}
+
+
+// 调整代码块头部z-index
+.md-editor-code-head {
+    z-index: 999 !important;
+}
+/* 
+  2. 暗黑模式大纲配色
+*/
+
+/* 普通模式 */
+.md-editor-catalog-active > span {
+  color: #4f46e5 !important; /* indigo-600 */
+  font-weight: 600;
+}
+.md-editor-catalog-link span:hover {
+  color: #4f46e5 !important;
+}
+
+/* 暗黑模式 */
+.dark .md-editor-catalog-active > span {
+  color: #38bdf8 !important; /* sky-400: 清爽的天蓝色 */
+  font-weight: 600;
+}
+
+.dark .md-editor-catalog-link span:hover {
+  color: #38bdf8 !important;
+  background-color: transparent !important; /* 确保去除背景 */
+}
+/* 
+  4. 调整未选中项在暗黑模式下的颜色 
+  让非高亮的标题稍微暗一点，形成层级对比
+*/
+.dark .md-editor-catalog-link {
+  color: #94a3b8 !important; /* slate-400 */
+}
