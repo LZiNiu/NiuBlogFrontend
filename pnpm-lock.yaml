@@ -11,9 +11,6 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.16
         version: 4.1.16(vite@6.4.1(@types/node@22.19.0)(jiti@2.6.1)(lightningcss@1.30.2)(sass@1.93.3))
-      '@types/markdown-it':
-        specifier: ^14.1.2
-        version: 14.1.2
       '@vueuse/core':
         specifier: ^14.1.0
         version: 14.1.0(vue@3.5.23(typescript@5.7.3))
@@ -75,6 +72,9 @@ importers:
       '@iconify-json/qlementine-icons':
         specifier: ^1.2.11
         version: 1.2.11
+      '@iconify-json/ri':
+        specifier: ^1.2.6
+        version: 1.2.6
       '@iconify-json/simple-icons':
         specifier: ^1.2.57
         version: 1.2.57
@@ -84,6 +84,9 @@ importers:
       '@tsconfig/node22':
         specifier: ^22.0.2
         version: 22.0.2
+      '@types/markdown-it':
+        specifier: ^14.1.2
+        version: 14.1.2
       '@types/node':
         specifier: ^22.19.0
         version: 22.19.0
@@ -583,6 +586,9 @@ packages:
 
   '@iconify-json/qlementine-icons@1.2.11':
     resolution: {integrity: sha512-ipCO0hd9z/SgmzCRsxCB9NGph1rcEp4aQBKGy9YOuDpQc9pwtgbB+yAJkGDfO4CzMDIEBSS6z7tmjk4cE9eHCw==}
+
+  '@iconify-json/ri@1.2.6':
+    resolution: {integrity: sha512-tGXRmXtb8oFu8DNg9MsS1pywKFgs9QZ4U6LBzUamBHaw3ePSiPd7ouE64gzHzfEcR16hgVaXoUa+XxD3BB0XOg==}
 
   '@iconify-json/simple-icons@1.2.57':
     resolution: {integrity: sha512-/yWbO502M6WfvmcV5OjEgA4uoPN/76nrn7Hri/8g9L4GiNQ6VMgXWE9vFp4tDsmGMAe4ZCov3NbH6vJCgXZ1hA==}
@@ -2817,6 +2823,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/qlementine-icons@1.2.11':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/ri@1.2.6':
     dependencies:
       '@iconify/types': 2.0.0
 
