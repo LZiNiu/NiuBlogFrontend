@@ -1,12 +1,13 @@
 // src/router/routes.ts
 import type { RouteRecordRaw } from "vue-router";
+import { transformRoutes } from "./utils";
 
-export const routes: RouteRecordRaw[] = [
+export const routes: RouteRecordRaw[] = transformRoutes([
   // 首页：同时支持 / 和 /home
   {
     path: "/",
     name: "Home",
-    component: () => import("@/views/home/index.vue"),
+    component: 'home',
     meta: {
       title: "首页",
       transition: "fade-slide", // 上浮淡入动画
@@ -22,10 +23,10 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/category",
     name: "Category",
-    component: () => import("@/views/category/index.vue"),
+    component: 'category',
     meta: {
       title: "分类",
-      icon: "ri:gallery-view-2",
+      icon: "ri:layout-grid-fill",
     },
     // children: [] // 预留，未来可加子分类
   },
@@ -34,7 +35,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: "/timeline",
     name: "Timeline",
-    component: () => import("@/views/timeline/index.vue"),
+    component: 'timeline',
     meta: {
       title: "时间轴",
       transition: "zoom-fade", // 时间轴使用：微缩放淡入
@@ -47,14 +48,14 @@ export const routes: RouteRecordRaw[] = [
     path: "/article",
     name: "ArticleDetail",
     component: () => import("@/views/article/index.vue"),
-    meta: { hidden: true }, // 关键：不在菜单中显示
+    meta: { hidden: true,  }, // 关键：不在菜单中显示
   },
 
   // 404
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
-    component: () => import("@/views/error/404.vue"),
-    meta: { hidden: true },
+    component: 'error/404',
+    meta: { hidden: true, layout: 'empty' },
   },
-];
+]);
