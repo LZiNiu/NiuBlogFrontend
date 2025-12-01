@@ -1,0 +1,51 @@
+// 定义文章元数据类型
+declare namespace Api {
+  namespace Common {
+    // 定义分页响应结构
+    interface PaginatedData<T> {
+      records: T[];
+      total: number;
+      current: number;
+      size: number;
+    }
+
+    interface Result<T> {
+      code: number;
+      msg: string;
+      data: T;
+    }
+  }
+
+  interface ArticleDetail {
+    id: number | string;
+    title: string;
+    create_time: Date | string;
+    update_time?: Date | string;
+    view_count: number;
+    like_count: number;
+    author_name: string;
+    category_ids: number[];
+    category_names: string[];
+    tag_ids: number[];
+    tag_names: string[];
+    content: string;
+  }
+
+  interface ArticleCardInfo {
+    id: number | string;
+    title: string;
+    summary?: string;
+    create_time: Date | string;
+    update_time?: Date | string;
+    view_count: number;
+    like_count: number;
+    author_name: string;
+    category_ids: number[];
+    tag_ids?: number[];
+    category_names: string[];
+    tag_names: string[];
+    cover_url?: string;
+  }
+
+  type ArticleCardInfoList = ArticleCardInfo[];
+}
