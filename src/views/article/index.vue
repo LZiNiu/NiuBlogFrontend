@@ -6,6 +6,8 @@ import { useDateFormat, useDark, useWindowScroll } from '@vueuse/core'
 import { Icon } from '@iconify/vue'
 import { MdPreview, MdCatalog } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
+import '@/styles/markdown/md-preview.scss'
+import { scrollToTop } from '@/utils/tool'
 
 const route = useRoute()
 const router = useRouter()
@@ -48,10 +50,6 @@ const handleCategoryClick = (categoryId: number) => {
   router.push({ path: '/category', query: { id: categoryId } })
 }
 
-// 回到顶部
-const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-}
 
 onMounted(() => {
   fetchDetail()
@@ -243,47 +241,7 @@ onMounted(() => {
 </style>
 
 <style lang="scss">
-/* 
-  1. 解决 Header 遮挡问题的终极方案 
-  直接定义 html 元素的滚动内边距。
-  Header 高度约 64px (4rem)，这里设为 80px 留出余量。
-  这样无论是点击目录，还是 URL 带 hash 跳转，都会停在距离顶部 80px 的位置。
-*/
-html {
-  scroll-padding-top: 100px;
-}
-.md-editor-catalog-indicator {
-  display: none !important; /* 隐藏默认指示器 */
-}
-/* 
-  2. 暗黑模式大纲配色
-*/
 
-/* 普通模式 */
-.md-editor-catalog-active > span {
-  color: #4f46e5 !important; /* indigo-600 */
-  font-weight: 600;
-}
-.md-editor-catalog-link span:hover {
-  color: #4f46e5 !important;
-}
 
-/* 暗黑模式 */
-.dark .md-editor-catalog-active > span {
-  color: #38bdf8 !important; /* sky-400: 清爽的天蓝色 */
-  font-weight: 600;
-}
-
-.dark .md-editor-catalog-link span:hover {
-  color: #38bdf8 !important;
-  background-color: transparent !important; /* 确保去除背景 */
-}
-/* 
-  4. 调整未选中项在暗黑模式下的颜色 
-  让非高亮的标题稍微暗一点，形成层级对比
-*/
-.dark .md-editor-catalog-link {
-  color: #94a3b8 !important; /* slate-400 */
-}
 
 </style>

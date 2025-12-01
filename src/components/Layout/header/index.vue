@@ -119,7 +119,7 @@ const getUnderlineClass = (path: string) => {
     2. !isTransparent (滚动后): 白色半透明, 毛玻璃, 边框, 阴影
   -->
   <header
-    class="fixed top-0 left-0 w-full z-50 h-16 transition-all duration-300 ease-in-out"
+    class="fixed top-0 left-0 w-full z-1000 h-16 transition-all duration-300 ease-in-out"
     :class="[
       isTransparent
         ? 'bg-transparent border-b border-transparent shadow-none backdrop-blur-none'
