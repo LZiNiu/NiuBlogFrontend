@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import Layout from '@/components/Layout/index.vue'
+const route = useRoute()
 </script>
 
 <template>
-  <RouterView />
+  <Layout v-if="route.meta.layout !== 'empty'"/>
+  <RouterView v-else/>
 </template>
 
 <style scoped>

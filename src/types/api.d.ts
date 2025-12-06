@@ -48,4 +48,16 @@ declare namespace Api {
   }
 
   type ArticleCardInfoList = ArticleCardInfo[];
+
+  interface Category {
+    id: number | string;
+    name: string;
+    description?: string;
+    create_time?: Date | string;
+    update_time?: Date | string;
+  }
+
+  interface CategoryCard extends Category {
+    article_count: number;
+  }
 }
