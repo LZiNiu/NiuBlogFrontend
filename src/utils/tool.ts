@@ -16,3 +16,10 @@ export function debounce(func: Function, wait: number) {
         }, wait);
     };
 }
+
+export function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+    });
+}

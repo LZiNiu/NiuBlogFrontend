@@ -3,6 +3,7 @@ import HomeBanner from './home-banner/index.vue'
 import ProfileCard from './profile-card/index.vue'
 import NoticeCard from './notice-card/index.vue'
 import { useArticleStore } from '@/stores/article'
+import { scrollToTop } from '@/utils/tool'
 
 defineOptions({ name: 'Home' })
 const currentPage = ref(1)
@@ -40,6 +41,7 @@ const handleCurrentChange = (val: number) => {
 }
 
 onMounted(() => {
+  scrollToTop()
   fetchArticleCardInfo()
 })
 </script>

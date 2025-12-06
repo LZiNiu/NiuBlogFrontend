@@ -1,27 +1,21 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import CategoryBanner from './category-banner/index.vue'
 import CategoryCard from './category-card/index.vue'
 import ArticleCard from '@/components/ArticleCard/index.vue'
+import { getCategoryList } from '@/api/category'
+import { fetchArticleListByCategoryId } from '@/api/article'
 
 const route = useRoute()
 const router = useRouter()
 
 // --- 状态 ---
 const isArticleView = ref(false)
-const currentCategory = ref<any>(null)
+const currentCategory = ref<Api.CategoryCard | any>(null)
 const loading = ref(false)
 
 // 模拟数据
-const categoryList = ref([
-  { id: 1, name: 'Vue Ecosystem', description: 'Deep dive into Vue 3, Pinia, and Vite.', article_count: 12 },
-  { id: 2, name: 'Backend', description: 'Java, Spring Boot & Docker architectures.', article_count: 8 },
-  { id: 3, name: 'Algorithm', description: 'Data structures and daily coding challenges.', article_count: 24 },
-  { id: 4, name: 'Design Patterns', description: '', article_count: 5 },
-  { id: 5, name: 'DevOps', description: 'CI/CD, Kubernetes and Cloud deployment.', article_count: 7 },
-])
+const categoryList: Ref<Api.CategoryCard[]> = ref([])
 
 const articleList = ref<any[]>([])
 const currentPage = ref(1)
@@ -61,29 +55,37 @@ const fetchArticles = async () => {
   loading.value = true
   
   try {
-    await new Promise(resolve => setTimeout(resolve, 600))
+    // await new Promise(resolve => setTimeout(resolve, 600))
     // Mock Data
-    articleList.value = Array.from({ length: 5 }).map((_, i) => ({
-      id: i,
-      title: `Understanding ${currentCategory.value.name}: A Comprehensive Guide (Part ${i + 1})`,
-      summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam...',
-      cover: i % 2 === 0 ? 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80' : '',
-      create_time: new Date().toISOString(),
-      author_name: 'Cattle',
-      category_names: [currentCategory.value.name, 'Tech'],
-      category_ids: [currentCategory.value.id, 99],
-      tag_names: ['Vue', 'Refactor'],
-      view_count: 120 + i,
-      like_count: 45 + i
-    }))
-    total.value = 20
+    // articleList.value = Array.from({ length: 5 }).map((_, i) => ({
+    //   id: i,
+    //   title: `Understanding ${currentCategory.value.name}: A Comprehensive Guide (Part ${i + 1})`,
+    //   summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam...',
+    //   cover: i % 2 === 0 ? 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80' : '',
+    //   create_time: new Date().toISOString(),
+    //   author_name: 'Cattle',
+    //   category_names: [currentCategory.value.name, 'Tech'],
+    //   category_ids: [currentCategory.value.id, 99],
+    //   tag_names: ['Vue', 'Refactor'],
+    //   view_count: 120 + i,
+    //   like_count: 45 + i
+    // }))
+    // total.value = 20
+    const result = await fetchArticleListByCategoryId(currentCategory.value.id, currentPage.value, pageSize)
+    articleList.value = result.records
+    total.value = result.total
   } finally {
     loading.value = false
   }
 }
 
+const fetchCaetgoryList = async () => {
+  categoryList.value = await getCategoryList()
+}
+
 // --- 初始化 ---
 onMounted(() => {
+  fetchCaetgoryList()
   scrollToTop() // 挂载时滚动到顶部
   
   const queryId = route.query.id
