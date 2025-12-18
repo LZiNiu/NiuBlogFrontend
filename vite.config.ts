@@ -7,7 +7,6 @@ import tailwindcss from "@tailwindcss/vite";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
 import { ElementPlusResolver } from "unplugin-vue-components/resolvers";
-import basicSsl from "@vitejs/plugin-basic-ssl";
 // icon 插件
 import Icons from "unplugin-icons/vite";
 
@@ -28,8 +27,7 @@ export default defineConfig({
     Icons({
       compiler: "vue3", // 指定编译器
       autoInstall: true, // 自动安装
-    }),
-    basicSsl(),
+    })
   ],
   resolve: {
     alias: {
@@ -41,7 +39,6 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 8080,
     cors: true,
-    https: true,
     proxy: {
       "/api": {
         target: "http://localhost:8000",

@@ -19,11 +19,11 @@ export const fetchArticleContent = (article_id: number | string) => {
   return http.get<string>(`/articles/${article_id}/body`)
 }
 
-export async function fetchArticleInfoById(id: number | string) {
+export function fetchArticleInfoById(id: number | string) {
   return http.get<Api.ArticleCardInfo>(`/articles/${id}/info`)
 }
 
-export async function fetchArticleListByCategoryId(
+export function fetchArticleListByCategoryId(
   id: number | string,
   page: number,
   size: number

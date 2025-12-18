@@ -84,13 +84,16 @@ const fetchCaetgoryList = async () => {
 }
 
 // --- 初始化 ---
-onMounted(() => {
-  fetchCaetgoryList()
+onMounted(async () => {
+  await fetchCaetgoryList()
   scrollToTop() // 挂载时滚动到顶部
   
   const queryId = route.query.id
   if (queryId) {
+    console.log('queryId', queryId)
+    console.log('categoryList', categoryList.value)
     const target = categoryList.value.find(c => String(c.id) === String(queryId))
+    console.log('target', target)
     if (target) {
       handleCategoryClick(target)
     }
@@ -106,7 +109,7 @@ onMounted(() => {
     <transition name="fade" mode="out-in">
       <CategoryBanner 
         :key="isArticleView ? 'detail' : 'list'"
-        :title="isArticleView ? currentCategory?.name : 'Explore Categories'"
+        :title="isArticleView ? currentCategory?.name : '探索分类'"
         :description="isArticleView ? currentCategory?.description : 'Browse articles by topic. Find what interests you the most.'"
         :is-detail="isArticleView"
         :icon="isArticleView ? 'carbon:folder-open' : 'carbon:categories'"

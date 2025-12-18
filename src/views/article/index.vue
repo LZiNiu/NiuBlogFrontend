@@ -137,11 +137,11 @@ onMounted(() => {
             </div>
 
             <!-- 标签 -->
-            <div v-if="article.info.tag_names?.length" class="flex items-center gap-2">
+            <div v-if="article.info.tag_names?.length" class="flex items-center gap-1">
               <Icon icon="mdi:tag-outline" />
               <div class="flex flex-wrap gap-2">
                 <span v-for="(tag, index) in article.info.tag_names" :key="index" class="bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded text-xs">
-                  #{{ tag }}
+                  {{ tag }}
                 </span>
               </div>
             </div>

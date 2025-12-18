@@ -7,7 +7,7 @@ const currentYear = new Date().getFullYear()
 // 站点配置
 const siteConfig = {
   author: 'Cattle',
-  icp: 'ICP备xxxxx号',
+  icp: '赣ICP备2025077189号',
   icpLink: 'https://beian.miit.gov.cn/',
   socials: [
     { icon: 'mdi:github', url: 'https://github.com/your-github' },
@@ -39,7 +39,7 @@ const techStack = [
               CattleBlog
             </h2>
             <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs mx-auto md:mx-0">
-              记录技术折腾之路，分享前端开发经验。<br>
+              记录技术折腾之路，分享开发经验。<br>
               Keep coding, keep learning.
             </p>
             <div class="flex justify-center md:justify-start gap-4">
@@ -106,7 +106,7 @@ const techStack = [
               target="_blank" 
               class="hover:text-indigo-500 hover:underline transition-colors"
             >
-              {{ siteConfig.icp }}
+              ICP备案号: {{ siteConfig.icp }}
             </a>
           </div>
 

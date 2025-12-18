@@ -1,20 +1,36 @@
 <script setup lang="ts">
+import http from "@/utils/http";
 import { Icon } from "@iconify/vue";
 
-// 模拟数据，实际可从 Store 获取
-const profile = {
+interface ProfileInfo {
+  post_count: number
+  tag_count: number
+  category_count: number
+}
+const profile = ref({
   avatar_url:
     "https://ui-avatars.com/api/?name=Cattle+Blog&background=6366f1&color=fff&size=128",
   name: "Cattle",
   bio: "什么都会一点的developer",
-  posts: 12,
-  tags: 24,
-  categories: 5,
+  posts: 0,
+  tags: 0,
+  categories: 0,
   socials: [
     { icon: "mdi:github", url: "https://github.com" },
     { icon: "mdi:email", url: "mailto:test@test.com" },
   ],
+});
+
+const fetchProfileInfo = async () => {
+  const res = await http.get<ProfileInfo>("/profile");
+  profile.value.posts = res.post_count;
+  profile.value.tags = res.tag_count;
+  profile.value.categories = res.category_count;
 };
+
+onMounted(async ()=> {
+  await fetchProfileInfo();
+})
 </script>
 
 <template>
@@ -50,19 +66,19 @@ const profile = {
         <div class="text-lg font-bold text-slate-800 dark:text-slate-200">
           {{ profile.posts }}
         </div>
-        <div class="text-xs text-slate-400 uppercase tracking-wider">Posts</div>
+        <div class="text-xs text-slate-400 uppercase tracking-wider">文章</div>
       </div>
       <div class="text-center">
         <div class="text-lg font-bold text-slate-800 dark:text-slate-200">
           {{ profile.tags }}
         </div>
-        <div class="text-xs text-slate-400 uppercase tracking-wider">Tags</div>
+        <div class="text-xs text-slate-400 uppercase tracking-wider">标签</div>
       </div>
       <div class="text-center">
         <div class="text-lg font-bold text-slate-800 dark:text-slate-200">
           {{ profile.categories }}
         </div>
-        <div class="text-xs text-slate-400 uppercase tracking-wider">Cats</div>
+        <div class="text-xs text-slate-400 uppercase tracking-wider">分类</div>
       </div>
     </div>
 

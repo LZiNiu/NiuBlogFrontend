@@ -60,4 +60,16 @@ declare namespace Api {
   interface CategoryCard extends Category {
     article_count: number;
   }
+
+  type EventType = 'coding' | 'blog' | 'life' | 'milestone'
+
+  interface Timeline {
+    id: number
+    date: string // YYYY-MM-DD
+    title: string
+    content: string
+    images?: string[] // 支持多图
+    event_type: EventType
+    link?: string // 可选的外链
+  }
 }

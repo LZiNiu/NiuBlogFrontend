@@ -10,7 +10,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  title: 'Categories',
+  title: '探索分类',
   description: 'Explore different topics and thoughts.',
   icon: 'carbon:categories',
   isDetail: false

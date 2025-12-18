@@ -1,30 +1,20 @@
 <script setup lang="ts">
+import { fetchTimelineList } from '@/api/timeline'
 import { scrollToTop } from '@/utils/tool'
 import { Icon } from '@iconify/vue'
 import { useDateFormat } from '@vueuse/core'
 
 // --- 1. 类型定义 ---
-type EventType = 'coding' | 'blog' | 'life' | 'milestone'
-
-interface TimelineEvent {
-  id: number
-  date: string // YYYY-MM-DD
-  title: string
-  content: string
-  images?: string[] // 支持多图
-  type: EventType
-  link?: string // 可选的外链
-}
 
 // --- 2. 模拟数据 (Mock Data) ---
-const mockData: TimelineEvent[] = [
+const timelineList: Ref<Api.Timeline[]> = ref([
   {
     id: 1,
     date: '2023-11-28',
     title: '博客重构完成 v2.0',
     content:
       '使用 Vue 3 + Vite + Tailwind CSS 全面重构博客，引入了暗黑模式和响应式布局，性能提升 50%。',
-    type: 'milestone',
+    event_type: 'milestone',
     images: [
       'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600&auto=format&fit=crop'
     ]
@@ -35,7 +25,7 @@ const mockData: TimelineEvent[] = [
     title: '深入学习 Python Pybind11',
     content:
       '发布了关于 Python 调用 C++ 的系列教程，解决了 Windows 下的环境配置痛点。',
-    type: 'blog',
+    event_type: 'blog',
     link: '/article/1'
   },
   {
@@ -43,7 +33,7 @@ const mockData: TimelineEvent[] = [
     date: '2023-08-20',
     title: '第一次海边旅行',
     content: '工作之余去了一趟青岛，感受海风，吃了海鲜，放松心情。',
-    type: 'life',
+    event_type: 'life',
     images: [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=600&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1519046904884-53103b34b206?q=80&w=600&auto=format&fit=crop'
@@ -54,7 +44,7 @@ const mockData: TimelineEvent[] = [
     date: '2023-05-12',
     title: '开源项目 Star 破百',
     content: '在 GitHub 上开源的工具库获得了第一个 100 Star，感谢大家的支持！',
-    type: 'coding',
+    event_type: 'coding',
     link: 'https://github.com'
   },
   {
@@ -62,18 +52,18 @@ const mockData: TimelineEvent[] = [
     date: '2022-12-01',
     title: 'Hello World',
     content: '建立了这个博客的第一个版本。开始记录学习之路。',
-    type: 'milestone'
+    event_type: 'milestone'
   }
-]
+])
 
 // --- 3. 数据处理逻辑 ---
 
 // 按年份分组
 const groupedEvents = computed(() => {
-  const groups: Record<string, TimelineEvent[]> = {}
+  const groups: Record<string, Api.Timeline[]> = {}
 
   // 先按时间降序排序
-  const sorted = [...mockData].sort(
+  const sorted = [...timelineList.value].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   )
 
@@ -94,16 +84,19 @@ const groupedEvents = computed(() => {
 })
 
 // 统计数据
-const totalEvents = mockData.length
-const startYear = new Date(mockData[mockData.length - 1].date).getFullYear()
-const runDays = Math.floor(
-  (new Date().getTime() -
-    new Date(mockData[mockData.length - 1].date).getTime()) /
-    (1000 * 3600 * 24)
+const totalEvents = computed(() => timelineList.value.length)
+const startYear = computed(() =>
+  new Date(timelineList.value[totalEvents.value - 1].date).getFullYear()
 )
-
+const runDays = computed(() =>
+  Math.floor(
+    (new Date().getTime() -
+      new Date(timelineList.value[totalEvents.value - 1].date).getTime()) /
+      (1000 * 3600 * 24)
+  )
+)
 // 辅助函数：根据类型获取图标和颜色
-const getTypeConfig = (type: EventType) => {
+const getTypeConfig = (type: Api.EventType) => {
   switch (type) {
     case 'coding':
       return {
@@ -146,8 +139,9 @@ const getTypeConfig = (type: EventType) => {
 // 格式化日期 (月-日)
 const formatDate = (dateStr: string) => useDateFormat(dateStr, 'MM-DD').value
 
-onMounted(() => {
+onMounted(async () => {
   scrollToTop()
+  timelineList.value = await fetchTimelineList()
 })
 </script>
 
@@ -168,7 +162,7 @@ onMounted(() => {
         </div>
         <div>
           <div class="text-2xl font-bold text-slate-800 dark:text-slate-100">
-            {{ runDays }} Days
+            上线 {{ runDays }} 天
           </div>
           <div class="text-sm text-slate-500">Since {{ startYear }}</div>
         </div>
@@ -187,9 +181,9 @@ onMounted(() => {
         </div>
         <div>
           <div class="text-2xl font-bold text-slate-800 dark:text-slate-100">
-            {{ totalEvents }} Moments
+            {{ totalEvents }} 条动态
           </div>
-          <div class="text-sm text-slate-500">Recorded Events</div>
+          <div class="text-sm text-slate-500">动态记录</div>
         </div>
       </div>
 
@@ -206,9 +200,9 @@ onMounted(() => {
         </div>
         <div>
           <div class="text-2xl font-bold text-slate-800 dark:text-slate-100">
-            Latest
+            最近活跃
           </div>
-          <div class="text-sm text-slate-500">{{ mockData[0].date }}</div>
+          <div class="text-sm text-slate-500">{{ timelineList[0].date }}</div>
         </div>
       </div>
     </div>
@@ -257,18 +251,18 @@ onMounted(() => {
               <!-- 外圈光晕 -->
               <div
                 class="absolute inset-0 rounded-full opacity-50 blur-sm transition-colors duration-300"
-                :class="getTypeConfig(event.type).bg"
+                :class="getTypeConfig(event.event_type).bg"
               ></div>
               <!-- 图标圆点 -->
               <div
                 class="relative w-8 h-8 rounded-full border-2 flex items-center justify-center bg-white dark:bg-slate-900 transition-colors duration-300"
                 :class="[
-                  getTypeConfig(event.type).border,
-                  getTypeConfig(event.type).color
+                  getTypeConfig(event.event_type).border,
+                  getTypeConfig(event.event_type).color
                 ]"
               >
                 <Icon
-                  :icon="getTypeConfig(event.type).icon"
+                  :icon="getTypeConfig(event.event_type).icon"
                   class="text-sm"
                 />
               </div>
