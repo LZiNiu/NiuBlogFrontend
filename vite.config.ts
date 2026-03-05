@@ -12,6 +12,7 @@ import Icons from "unplugin-icons/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  // base: "./",
   plugins: [
     vue(),
     vueDevTools(),
@@ -46,5 +47,16 @@ export default defineConfig({
         // rewrite: (path) => path.replace(/^\/api\/v1/, '/api/v1'),
       },
     },
+  },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+        compress: {
+          // 生产环境去除 console
+          drop_console: true,
+          // 生产环境去除 debugger
+          drop_debugger: true
+        }
+      },
   },
 });

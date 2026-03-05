@@ -27,6 +27,8 @@ coverage
 *.sln
 *.sw?
 
+.env*
+!.env.example
 *.tsbuildinfo
 # 忽略images下的图片文件
 src/assets/images/*.*
