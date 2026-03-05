@@ -12,13 +12,13 @@ jobs:
     steps:
     # 1. 拉取代码
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # ==========================================
     # 前端处理部分
     # ==========================================
     - name: Setup Node.js 24
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '24'
 
@@ -29,12 +29,10 @@ jobs:
 
     - name: Install Frontend Dependencies
       run: |
-        cd NiuBlogFrontend
         pnpm install
 
     - name: Build Frontend
       run: |
-        cd NiuBlogFrontend
         pnpm run build
       # 如果你的前端在编译时需要读取环境变量 (如 VITE_API_URL)，请在此处传入:
       # env:
@@ -66,6 +64,6 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         port: ${{ secrets.SERVER_SSH_PORT }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "NiuBlogFrontend/dist" # 本地打包后的路径
+        source: "./dist" # 本地打包后的路径
         target: "/www/wwwroot/admin.zhiniuyan.xyz" # 服务器父目录
         strip_components: 2 # 去掉路径层级，保证最终路径是 .../admin.zhiniuyan.xyz/dist
