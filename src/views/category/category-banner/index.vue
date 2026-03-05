@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
-import backgroundImage from '@/assets/images/category_banner.jpg'
+// import backgroundImage from '@/assets/images/category_banner.jpg'
 
 interface Props {
   title: string
@@ -18,7 +18,7 @@ withDefaults(defineProps<Props>(), {
 
 // 这里使用了类似您提供的蓝色波浪水彩图片
 // 您可以将此链接替换为您本地的图片路径，如: new URL('@/assets/banner-wave.jpg', import.meta.url).href
-const bgImage = backgroundImage
+const bgImage = null
 </script>
 
 <template>
