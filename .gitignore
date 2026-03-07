@@ -31,6 +31,4 @@ coverage
 !.env.example
 *.tsbuildinfo
 # 忽略images下的图片文件
-!src/assets/images/home_banner.jpg
-src/assets/images/*.*
 
