@@ -50,7 +50,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
           # 定义目标路径
-          DIST_PATH="/www/wwwroot/admin.zhiniuyan.xyz/dist"
+          DIST_PATH="/www/wwwroot/www.zhiniuyan.xyz/dist"
           
           # 如果 dist 目录存在，递归强制删除
           if [ -d "$DIST_PATH" ]; then
@@ -65,5 +65,5 @@ jobs:
         port: ${{ secrets.SERVER_SSH_PORT }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "./dist" # 本地打包后的路径
-        target: "/www/wwwroot/admin.zhiniuyan.xyz" # 服务器父目录
+        target: "/www/wwwroot/www.zhiniuyan.xyz/dist" # 服务器父目录
         strip_components: 2 # 去掉路径层级，保证最终路径是 .../admin.zhiniuyan.xyz/dist
