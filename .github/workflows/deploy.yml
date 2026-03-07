@@ -54,7 +54,9 @@ jobs:
           
           # 如果 dist 目录存在，递归强制删除
           if [ -d "$DIST_PATH" ]; then
-            rm -rf $DIST_PATH
+          echo "目录存在，正在清理旧文件（保留配置文件）..."
+            cd $DIST_PATH
+            find . -maxdepth 1 ! -name "." ! -name ".user.ini" -exec rm -rf {} \;
           fi
 
     - name: Upload Frontend Dist
@@ -64,6 +66,6 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         port: ${{ secrets.SERVER_SSH_PORT }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "./dist" # 本地打包后的路径
+        source: "dist" # 本地打包后的路径
         target: "/www/wwwroot/www.zhiniuyan.xyz/dist" # 服务器父目录
-        strip_components: 2 # 去掉路径层级，保证最终路径是 .../admin.zhiniuyan.xyz/dist
+        strip_components: 1 # 去掉路径层级
